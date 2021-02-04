@@ -10,8 +10,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.appsdeveloperblog.app.ws.UserRepository;
 import com.appsdeveloperblog.app.ws.io.entity.UserEntity;
+import com.appsdeveloperblog.app.ws.io.repositories.UserRepository;
 import com.appsdeveloperblog.app.ws.service.UserService;
 import com.appsdeveloperblog.app.ws.shared.Utils;
 import com.appsdeveloperblog.app.ws.shared.dto.UserDto;
@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDto createUser(UserDto user) {
 	
-		if ( userRepository.findUserByEmail(user.getEmail())!= null) throw new RuntimeException("Record already exists");
+		if ( userRepository.findByEmail(user.getEmail())!= null) throw new RuntimeException("Record already exists");
 		
 		//Prepares Data Entity which comes from Data Transfer object
 		UserEntity userEntity = new UserEntity();
@@ -53,11 +53,23 @@ public class UserServiceImpl implements UserService {
 		BeanUtils.copyProperties(storedUserDetails, returnValue);
 		return returnValue;
 	}
+	
+	//occurs after successfulAuthentication
+	@Override
+	public UserDto getUser(String email) {
+		
+		UserEntity userEntity = userRepository.findByEmail(email);
+		
+		UserDto returnValue = new UserDto();
+		BeanUtils.copyProperties(userEntity, returnValue);
+		return returnValue;
+	}
+	
 	//deals with returning a user via email
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-		UserEntity userEntity = userRepository.findUserByEmail(email);
+		UserEntity userEntity = userRepository.findByEmail(email);
 		
 		if(userEntity == null) throw new UsernameNotFoundException(email);
 		

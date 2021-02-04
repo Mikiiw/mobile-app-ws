@@ -1,6 +1,9 @@
 package com.appsdeveloperblog.app.ws.ui.model.request;
 
 public class UserLoginRequestModel {
+	private String email;
+	private String password;
+	
 	public String getEmail() {
 		return email;
 	}
@@ -13,6 +16,5 @@ public class UserLoginRequestModel {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	private String email;
-	private String password;
+
 }

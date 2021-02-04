@@ -19,17 +19,24 @@ public class WebSecurity extends WebSecurityConfigurerAdapter{
 		this.userDetailsService = userDetailsService;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
-	//This is the section where security applies. Permitall allows creation. 
+	//This is the section where security applies. Permit all allows creation from GET /users. 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		
 		http.csrf().disable().authorizeRequests()
-		.antMatchers(HttpMethod.POST, "/users")
-		.permitAll().anyRequest().authenticated();
+		.antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
+		.permitAll()
+		.anyRequest().authenticated().and().addFilter(getAuthenticationFilter());
 	}
 	
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
+	}
+	
+	public AuthenticationFilter getAuthenticationFilter() throws Exception {
+		final AuthenticationFilter filter = new AuthenticationFilter(authenticationManager());
+		filter.setFilterProcessesUrl("/users/login");
+		return filter;
 	}
 }
