@@ -15,6 +15,7 @@ import com.appsdeveloperblog.app.ws.io.repositories.UserRepository;
 import com.appsdeveloperblog.app.ws.service.UserService;
 import com.appsdeveloperblog.app.ws.shared.Utils;
 import com.appsdeveloperblog.app.ws.shared.dto.UserDto;
+import com.appsdeveloperblog.app.ws.ui.model.response.ErrorMessages;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -71,9 +72,55 @@ public class UserServiceImpl implements UserService {
 
 		UserEntity userEntity = userRepository.findByEmail(email);
 		
+		//if no entity found by email
 		if(userEntity == null) throw new UsernameNotFoundException(email);
 		
 		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList<>());
+	}
+
+	@Override
+	public UserDto getUserByUserId(String userId) {
+		UserDto returnValue = new UserDto();
+		
+		UserEntity userEntity = userRepository.findByUserId(userId);
+				
+		if(userEntity == null) 
+			throw new UsernameNotFoundException("User with ID: " + userId + " not found");
+		
+		BeanUtils.copyProperties(userEntity, returnValue);
+		
+		return returnValue;
+	}
+
+	@Override
+	public UserDto updateUser(String userId, UserDto user) {
+
+		UserDto returnValue = new UserDto();
+		
+		UserEntity userEntity = userRepository.findByUserId(userId);
+				
+		if(userEntity == null)
+			throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+		
+		userEntity.setFirstName(user.getFirstName());
+		userEntity.setLastName(user.getLastName());
+		
+		UserEntity updatedUserDetails = userRepository.save(userEntity);
+		
+				BeanUtils.copyProperties(updatedUserDetails, returnValue);
+				
+		return returnValue;
+	}
+
+	@Override
+	public void deleteUser(String userId) {
+		// TODO Auto-generated method stub
+		UserEntity userEntity = userRepository.findByUserId(userId);
+		
+		if(userEntity == null)
+			throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+		
+		userRepository.delete(userEntity);
 	}
 
 }

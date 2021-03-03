@@ -5,6 +5,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.appsdeveloperblog.app.ws.service.UserService;
@@ -19,14 +20,19 @@ public class WebSecurity extends WebSecurityConfigurerAdapter{
 		this.userDetailsService = userDetailsService;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
-	//This is the section where security applies. Permit all allows creation from GET /users. 
+	
+	//This is the section where security applies. Each add filter is a layer of security
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		
+		//Run one time to set authorization
 		http.csrf().disable().authorizeRequests()
-		.antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
+		.antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL) //anything with /users will match
 		.permitAll()
-		.anyRequest().authenticated().and().addFilter(getAuthenticationFilter());
+		.anyRequest().authenticated().and()
+		.addFilter(getAuthenticationFilter()) //username password match
+		.addFilter(new AuthorizationFilter(authenticationManager())) //Bearer Token match
+		.sessionManagement()
+		.sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Never create a session to keep API stateless
 	}
 	
 	@Override
